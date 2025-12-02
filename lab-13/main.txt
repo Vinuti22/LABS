@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Менеджер Коллекции Книг (JS Collections)</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; background-color: #f4f4f9; }
+        .container { max-width: 900px; margin: auto; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 4px 8px rgba(0,0,0,0.1); }
+        h1 { color: #333; text-align: center; }
+        .form-group { margin-bottom: 15px; }
+        label { display: block; margin-bottom: 5px; font-weight: bold; }
+        input[type="text"], input[type="number"] { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px; box-sizing: border-box; }
+        button { padding: 10px 15px; border: none; border-radius: 4px; cursor: pointer; transition: background-color 0.3s; }
+        .add-btn { background-color: #5cb85c; color: white; }
+        .add-btn:hover { background-color: #4cae4c; }
+        .search-btn { background-color: #007bff; color: white; }
+        .search-btn:hover { background-color: #0056b3; }
+        .controls { display: flex; gap: 10px; margin-bottom: 20px; }
+        #book-list { list-style: none; padding: 0; }
+        #book-list li { background: #e9ecef; margin-bottom: 10px; padding: 15px; border-radius: 4px; display: flex; justify-content: space-between; align-items: center; }
+        .delete-btn { background-color: #dc3545; color: white; margin-left: 10px; }
+        .delete-btn:hover { background-color: #c82333; }
+        .sort-btn { background-color: #ffc107; color: #333; }
+        .sort-btn:hover { background-color: #e0a800; }
+        .book-details { flex-grow: 1; }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h1>📚 Менеджер Коллекции Книг</h1>
+        
+        <section>
+            <h2>Добавить Книгу</h2>
+            <div class="form-group"><label for="title">Название:</label><input type="text" id="title" required></div>
+            <div class="form-group"><label for="author">Автор:</label><input type="text" id="author" required></div>
+            <div class="form-group"><label for="year">Год:</label><input type="number" id="year" required></div>
+            <div class="form-group"><label for="isbn">ISBN (Уникальный):</label><input type="text" id="isbn" required></div>
+            <button class="add-btn" onclick="addBookHandler()">Добавить в Коллекцию</button>
+        </section>
+
+        <hr>
+
+        <section>
+            <h2>Поиск и Управление</h2>
+            <div class="controls">
+                <input type="text" id="search-query" placeholder="Искать по названию или автору..." style="flex-grow: 1;">
+                <button class="search-btn" onclick="searchBooksHandler()">Найти</button>
+                <button class="sort-btn" onclick="sortBooks('title')">Сортировать по Названию</button>
+                <button class="sort-btn" onclick="sortBooks('year')">Сортировать по Году</button>
+            </div>
+        </section>
+
+        <hr>
+
+        <section>
+            <h2>Текущая Коллекция</h2>
+            <ul id="book-list">
+                </ul>
+        </section>
+    </div>
+
+    <script>
+        // --- 1. Глобальные Коллекции ---
+        let books = []; // Основное хранилище: Array (Массив)
+        let bookMap = new Map(); // Индекс для быстрого доступа: Map (ключ=id, значение=объект книги)
+        let isbnSet = new Set(); // Для проверки уникальности: Set (хранит только ISBN)
+
+        // --- 2. Функции Управления Данными ---
+
+        /** Добавляет книгу в коллекции (Array, Map, Set). */
+        function addBook(title, author, year, isbn) {
+            if (isbnSet.has(isbn)) {
+                alert(`Ошибка: Книга с ISBN ${isbn} уже существует.`);
+                return false;
+            }
+
+            const newBook = {
+                id: Date.now(), // Уникальный ID
+                title: title,
+                author: author,
+                year: Number(year),
+                isbn: isbn
+            };
+
+            // Добавление в Array
+            books.push(newBook);
+
+            // Добавление в Map (Оптимизация: быстрый доступ по ID O(1))
+            bookMap.set(newBook.id, newBook);
+
+            // Добавление в Set (Оптимизация: быстрая проверка уникальности O(1))
+            isbnSet.add(isbn);
+            
+            return true;
+        }
+
+        /** Удаляет книгу из коллекций по ID. */
+        function deleteBook(id) {
+            // Быстрое получение книги из Map для извлечения ISBN
+            const bookToDelete = bookMap.get(id);
+            if (!bookToDelete) return; 
+
+            // Обновление Array (Используем filter)
+            books = books.filter(book => book.id !== id);
+
+            // Обновление Map (Быстрое удаление O(1))
+            bookMap.delete(id);
+
+            // Обновление Set (Быстрое удаление O(1))
+            isbnSet.delete(bookToDelete.isbn);
+            
+            displayBooks(books); // Обновляем список на экране
+        }
+
+        /** Ищет книги по запросу (по названию или автору). */
+        function searchBooks(query) {
+            const lowerQuery = query.toLowerCase();
+            
+            // Используем Array.filter() для поиска по тексту (O(N))
+            return books.filter(book => 
+                book.title.toLowerCase().includes(lowerQuery) ||
+                book.author.toLowerCase().includes(lowerQuery)
+            );
+        }
+
+        /** Сортирует основной массив книг. */
+        function sortBooks(key) {
+            books.sort((a, b) => {
+                if (key === 'title') {
+                    // Сортировка строк (по алфавиту)
+                    return a.title.localeCompare(b.title);
+                } else if (key === 'year') {
+                    // Сортировка чисел (по возрастанию)
+                    return a.year - b.year;
+                }
+                return 0;
+            });
+            displayBooks(books); // Обновляем список на экране
+        }
+
+        // --- 3. Функции Отображения (DOM) ---
+
+        /** Отображает заданный массив книг на экране. */
+        function displayBooks(bookArray) {
+            const listElement = document.getElementById('book-list');
+            
+            // Используем Array.map() для создания HTML
+            const htmlList = bookArray.map(book => `
+                <li>
+                    <div class="book-details">
+                        <strong>${book.title}</strong> (${book.year})<br>
+                        <em>Автор: ${book.author}</em> | ISBN: ${book.isbn}
+                    </div>
+                    <button class="delete-btn" onclick="deleteBook(${book.id})">Удалить</button>
+                </li>
+            `).join(''); // Используем Array.join('') для эффективного добавления в DOM
+
+            listElement.innerHTML = htmlList;
+        }
+
+        // --- 4. Обработчики Событий ---
+
+        function addBookHandler() {
+            const title = document.getElementById('title').value.trim();
+            const author = document.getElementById('author').value.trim();
+            const year = document.getElementById('year').value.trim();
+            const isbn = document.getElementById('isbn').value.trim();
+
+            if (!title || !author || !year || !isbn) {
+                alert('Пожалуйста, заполните все поля.');
+                return;
+            }
+
+            if (addBook(title, author, year, isbn)) {
+                // Очистка полей
+                document.getElementById('title').value = '';
+                document.getElementById('author').value = '';
+                document.getElementById('year').value = '';
+                document.getElementById('isbn').value = '';
+                
+                displayBooks(books); // Отображаем обновленный список
+            }
+        }
+
+        function searchBooksHandler() {
+            const query = document.getElementById('search-query').value.trim();
+            const results = searchBooks(query);
+            displayBooks(results); // Отображаем только результаты поиска
+            
+            if (results.length === 0) {
+                alert('Книги по вашему запросу не найдены.');
+            }
+        }
+
+        // Инициализация: Отображение коллекции при первой загрузке (пока пустой)
+        window.onload = () => {
+            // Добавим несколько книг для примера
+            addBook('1984', 'Джордж Оруэлл', 1949, '978-5-17-080344-9');
+            addBook('Мастер и Маргарита', 'Михаил Булгаков', 1967, '978-5-17-081044-7');
+            addBook('Гордость и предубеждение', 'Джейн Остин', 1813, '978-5-17-080944-0');
+            
+            displayBooks(books);
+        };
+        
+        // Дополнительная функция для сортировки
+        function sortBooksHandler(key) {
+            sortBooks(key);
+        }
+    </script>
+
+</body>
+</html>
