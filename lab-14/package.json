@@ -1,0 +1,12 @@
+{
+  "name": "lab-14",
+  "version": "1.0.0",
+  "description": "Лабораторная работа 14 — Jest + отладка в DevTools",
+  "main": "main.js",
+  "scripts": {
+    "test": "jest"
+  },
+  "devDependencies": {
+    "jest": "^29.7.0"
+  }
+}

@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Lab 14 - Отладка</title>
+</head>
+<body>
+  <h1>Лабораторная работа 14</h1>
+  <p>Откройте DevTools → Sources → main.js и поставьте breakpoint в sumArray</p>
+
+  <script type="module">
+    import { sumArray, factorial, findMax } from './utils.js';
+
+    console.log('5! =', factorial(5));
+    console.log('sumArray([1,2,3,4,5]) =', sumArray([1, 2, 3, 4, 5])); // ← тут будет NaN → отлаживаем!
+    console.log('max =', findMax([10, -5, 33, 1]));
+  </script>
+</body>
+</html>
