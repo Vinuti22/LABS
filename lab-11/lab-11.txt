@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <title>Лабораторная №11 — Список задач (Дизайн с загрузкой)</title>
+  <script src="https://unpkg.com/react@18/umd/react.development.js" crossorigin></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js" crossorigin></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  <style>
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(135deg, #4a76a8 0%, #f2d9c1 100%);
+      padding: 40px 20px;
+      margin: 0;
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      box-sizing: border-box;
+    }
+    #root {
+      background: rgba(255, 255, 255, 0.95);
+      padding: 30px;
+      border-radius: 15px;
+      max-width: 450px;
+      width: 100%;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+      backdrop-filter: blur(5px);
+    }
+    h2 {
+      text-align: center;
+      color: #333;
+      margin-bottom: 25px;
+    }
+    .task-form-container {
+        display: flex;
+        gap: 10px;
+        margin-bottom: 25px;
+        align-items: center; /* Выравнивание элементов по центру по вертикали */
+        position: relative; /* Для позиционирования спиннера */
+    }
+    input[type="text"] {
+      padding: 12px 15px;
+      flex-grow: 1;
+      border: 2px solid #ccc;
+      border-radius: 8px;
+      font-size: 16px;
+      transition: border-color 0.3s;
+    }
+    input[type="text"]:focus {
+      border-color: #4a76a8;
+      outline: none;
+    }
+    button {
+      padding: 12px 20px;
+      background: #4a76a8;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 16px;
+      font-weight: bold;
+      transition: background 0.3s, transform 0.1s;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+      position: relative; /* Для размещения спиннера поверх */
+      overflow: hidden; /* Скрываем спиннер, когда кнопка его перекрывает */
+    }
+    button:hover {
+      background: #3c5e87;
+    }
+    button:active {
+        transform: scale(0.98);
+    }
+    button:disabled {
+        background: #999;
+        cursor: not-allowed;
+    }
+    .task-list button {
+        background: #e74c3c;
+        padding: 6px 10px;
+        font-size: 14px;
+        box-shadow: none;
+        margin-left: 10px;
+    }
+    .task-list button:hover {
+        background: #c0392b;
+    }
+    ul {
+      list-style: none;
+      padding: 0;
+    }
+    li {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 10px 15px;
+      margin-bottom: 10px;
+      background: #fff;
+      border-radius: 8px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+      opacity: 0; /* Изначально скрываем для анимации появления */
+      transform: translateY(20px); /* Смещаем вниз */
+      animation: fadeInTask 0.5s ease-out forwards; /* Анимация появления */
+    }
+
+    /* Анимация появления задачи */
+    @keyframes fadeInTask {
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    /* Стили для спиннера загрузки */
+    .spinner {
+      border: 4px solid rgba(255, 255, 255, 0.3);
+      border-top: 4px solid #fff; /* Цвет спиннера */
+      border-radius: 50%;
+      width: 20px;
+      height: 20px;
+      animation: spin 1s linear infinite;
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      opacity: 0;
+      transition: opacity 0.3s ease-out;
+    }
+    .spinner.visible {
+        opacity: 1;
+    }
+
+    @keyframes spin {
+      0% { transform: translate(-50%, -50%) rotate(0deg); }
+      100% { transform: translate(-50%, -50%) rotate(360deg); }
+    }
+  </style>
+</head>
+<body>
+  <div id="root"></div>
+
+  <script type="text/babel">
+    const { useState, useRef, useEffect } = React;
+
+    function TaskForm({ addTask, isLoading }) {
+      const [text, setText] = useState('');
+      const buttonRef = useRef(null); // Ссылка на кнопку
+      const spinnerRef = useRef(null); // Ссылка на спиннер
+
+      const handleSubmit = () => {
+        if (text.trim() !== '') {
+          addTask(text);
+          setText('');
+        }
+      };
+
+      // Управляем видимостью спиннера на кнопке
+      useEffect(() => {
+        if (buttonRef.current && spinnerRef.current) {
+          if (isLoading) {
+            buttonRef.current.classList.add('loading');
+            spinnerRef.current.classList.add('visible');
+          } else {
+            buttonRef.current.classList.remove('loading');
+            spinnerRef.current.classList.remove('visible');
+          }
+        }
+      }, [isLoading]);
+
+      return (
+        <div className="task-form-container">
+          <input
+            type="text"
+            placeholder="Новая задача..."
+            value={text}
+            onChange={(e) => setText(e.target.value)}
+            onKeyDown={(e) => {
+                if (e.key === 'Enter' && !isLoading) {
+                    handleSubmit();
+                }
+            }}
+            disabled={isLoading} /* Отключаем поле ввода во время загрузки */
+          />
+          <button
+            ref={buttonRef}
+            onClick={handleSubmit}
+            disabled={isLoading} /* Отключаем кнопку во время загрузки */
+          >
+            {isLoading ? (
+                <>
+                    <div ref={spinnerRef} className="spinner visible"></div>
+                    <span style={{opacity: 0}}>Добавить</span> {/* Скрываем текст, но сохраняем ширину */}
+                </>
+            ) : (
+                "Добавить"
+            )}
+          </button>
+        </div>
+      );
+    }
+
+    function TaskList({ tasks, removeTask }) {
+      return (
+        <ul className="task-list">
+          {tasks.map((t, i) => (
+            <li key={i}>
+              <span>{t}</span>
+              <button onClick={() => removeTask(i)}>Удалить</button>
+            </li>
+          ))}
+        </ul>
+      );
+    }
+
+    function App() {
+      const [tasks, setTasks] = useState([]);
+      const [isLoading, setIsLoading] = useState(false); // Состояние загрузки
+
+      const addTask = (text) => {
+        setIsLoading(true); // Включаем состояние загрузки
+
+        // Имитация асинхронной операции (например, отправка на сервер)
+        setTimeout(() => {
+          setTasks((prevTasks) => [...prevTasks, text]);
+          setIsLoading(false); // Выключаем состояние загрузки
+        }, 800); // Задержка 800мс для демонстрации загрузки
+      };
+
+      const removeTask = (index) => setTasks(tasks.filter((_, i) => i !== index));
+
+      return (
+        <div>
+          <h2>📝 Список задач</h2>
+          <TaskForm addTask={addTask} isLoading={isLoading} />
+          <TaskList tasks={tasks} removeTask={removeTask} />
+        </div>
+      );
+    }
+
+    const root = ReactDOM.createRoot(document.getElementById('root'));
+    root.render(<App />);
+  </script>
+</body>
+</html>

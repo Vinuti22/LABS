@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Красивый Neumorphism Калькулятор</title>
+    
+    <style>
+        /* Общие настройки и фон */
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            font-family: 'Arial', sans-serif;
+            background: #e0e0e0; /* Светлый, мягкий фон */
+        }
+
+        /* Контейнер калькулятора (основной элемент Neumorphism) */
+        .calculator {
+            width: 340px;
+            padding: 20px;
+            border-radius: 30px;
+            background: #e0e0e0;
+            box-shadow: 
+                10px 10px 30px rgba(174, 174, 192, 0.4), /* Темная тень (снизу-справа) */
+                -10px -10px 30px #ffffff; /* Светлая тень (сверху-слева) */
+        }
+
+        /* Поле вывода (дисплей) */
+        .display {
+            margin-bottom: 25px;
+        }
+
+        #result {
+            width: 100%;
+            height: 60px;
+            border: none;
+            border-radius: 20px;
+            padding: 20px;
+            font-size: 2.2em;
+            text-align: right;
+            color: #333;
+            background: #e0e0e0;
+            box-sizing: border-box;
+            /* Внутренний эффект "вдавленности" для дисплея */
+            box-shadow: 
+                inset 5px 5px 10px rgba(174, 174, 192, 0.6), 
+                inset -5px -5px 10px #ffffff;
+        }
+
+        /* Сетка кнопок */
+        .buttons {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 15px;
+        }
+
+        /* Базовый стиль кнопок */
+        .btn {
+            padding: 20px 0;
+            font-size: 1.2em;
+            border: none;
+            border-radius: 15px;
+            cursor: pointer;
+            color: #333;
+            background: #e0e0e0;
+            /* Стиль "выпуклости" для кнопок */
+            box-shadow: 
+                6px 6px 12px rgba(174, 174, 192, 0.4), 
+                -6px -6px 12px #ffffff;
+            
+            transition: all 0.15s ease; /* Для анимации нажатия */
+        }
+
+        /* Анимация нажатия (Вдавленный эффект) */
+        .btn:active {
+            box-shadow: 
+                inset 3px 3px 7px rgba(174, 174, 192, 0.7), 
+                inset -3px -3px 7px #ffffff;
+            color: #0a4f8f; /* Смена цвета при нажатии */
+        }
+
+        /* Специальные стили для кнопок */
+        .func {
+            color: #f76c6c; /* Красный оттенок */
+        }
+
+        .operator {
+            color: #007bff; /* Синий оттенок */
+        }
+
+        /* Кнопка "Равно" */
+        .equal {
+            grid-column: span 2; /* Растянуть на две колонки */
+            color: #ffffff;
+            background: #007bff; /* Ярко-синий фон */
+            box-shadow: 
+                6px 6px 12px rgba(0, 123, 255, 0.5), 
+                -6px -6px 12px #66b5ff;
+        }
+
+        .equal:active {
+            background: #0056b3; /* Темнее при нажатии */
+            box-shadow: 
+                inset 3px 3px 7px rgba(0, 86, 179, 0.8), 
+                inset -3px -3px 7px #007bff;
+        }
+
+        /* Кнопка "0" */
+        .zero {
+            grid-column: span 2; /* Растянуть на две колонки */
+        }
+    </style>
+</head>
+<body>
+    
+    <div class="calculator">
+        <div class="display">
+            <input type="text" id="result" value="" disabled>
+        </div>
+        <div class="buttons">
+            <button class="btn func" onclick="clearDisplay()">C</button>
+            <button class="btn func" onclick="deleteLast()">&#9003;</button>
+            <button class="btn func" onclick="appendOperator('%')">%</button>
+            <button class="btn operator" onclick="appendOperator('/')">/</button>
+
+            <button class="btn num" onclick="appendNumber(7)">7</button>
+            <button class="btn num" onclick="appendNumber(8)">8</button>
+            <button class="btn num" onclick="appendNumber(9)">9</button>
+            <button class="btn operator" onclick="appendOperator('*')">x</button>
+
+            <button class="btn num" onclick="appendNumber(4)">4</button>
+            <button class="btn num" onclick="appendNumber(5)">5</button>
+            <button class="btn num" onclick="appendNumber(6)">6</button>
+            <button class="btn operator" onclick="appendOperator('-')">-</button>
+
+            <button class="btn num" onclick="appendNumber(1)">1</button>
+            <button class="btn num" onclick="appendNumber(2)">2</button>
+            <button class="btn num" onclick="appendNumber(3)">3</button>
+            <button class="btn operator" onclick="appendOperator('+')">+</button>
+
+            <button class="btn num zero" onclick="appendNumber(0)">0</button>
+            <button class="btn num" onclick="appendNumber('.')">.</button>
+            <button class="btn equal" onclick="calculate()">=</button>
+        </div>
+    </div>
+
+    <script>
+        const resultInput = document.getElementById('result');
+        let currentExpression = '';
+
+        // Добавить число или десятичную точку
+        function appendNumber(number) {
+            if (resultInput.value === 'Ошибка') {
+                clearDisplay();
+            }
+            currentExpression += number;
+            resultInput.value = currentExpression;
+        }
+
+        // Добавить оператор
+        function appendOperator(operator) {
+            if (resultInput.value === 'Ошибка') {
+                clearDisplay();
+            }
+            // Запрет на добавление оператора, если выражение пусто
+            if (currentExpression === '') return;
+
+            const lastChar = currentExpression.slice(-1);
+
+            // Если последний символ - оператор, заменить его
+            if (['+', '-', '*', '/', '%'].includes(lastChar)) {
+                currentExpression = currentExpression.slice(0, -1) + operator;
+            } else {
+                currentExpression += operator;
+            }
+            resultInput.value = currentExpression;
+        }
+
+        // Очистить весь дисплей
+        function clearDisplay() {
+            currentExpression = '';
+            resultInput.value = '';
+        }
+
+        // Удалить последний символ
+        function deleteLast() {
+            currentExpression = currentExpression.slice(0, -1);
+            resultInput.value = currentExpression;
+        }
+
+        // Выполнить вычисление
+        function calculate() {
+            if (currentExpression === '') return;
+
+            try {
+                // Замена '%' на '/100*' для корректного вычисления процентов
+                let calculation = currentExpression.replace(/(\d+)%/g, '($1/100)');
+                
+                // Используем eval для простой арифметики. 
+                let result = eval(calculation);
+
+                // Ограничение числа знаков после запятой
+                if (typeof result === 'number') {
+                    result = parseFloat(result.toFixed(8));
+                }
+
+                resultInput.value = result;
+                currentExpression = String(result);
+            } catch (e) {
+                resultInput.value = 'Ошибка';
+                currentExpression = '';
+            }
+        }
+
+        // Дополнительная функция для обработки ввода с клавиатуры
+        document.addEventListener('keydown', (event) => {
+            const key = event.key;
+            
+            if (/[0-9]/.test(key)) {
+                appendNumber(key);
+            } else if (['+', '-', '*', '/'].includes(key)) {
+                appendOperator(key);
+            } else if (key === 'Enter' || key === '=') {
+                calculate();
+                event.preventDefault(); // Предотвратить стандартное действие Enter
+            } else if (key === 'Backspace') {
+                deleteLast();
+            } else if (key === 'Escape') {
+                clearDisplay();
+            } else if (key === '.') {
+                appendNumber('.');
+            }
+        });
+    </script>
+</body>
+</html>

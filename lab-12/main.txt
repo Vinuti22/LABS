@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>JWT Аутентификация (Симулятор)</title>
+    <style>
+        body { font-family: sans-serif; padding: 20px; background-color: #f4f4f9; }
+        .container { max-width: 400px; margin: 0 auto; padding: 20px; background: white; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        h2 { text-align: center; color: #333; }
+        input, button { width: 100%; padding: 10px; margin-bottom: 10px; border-radius: 4px; border: 1px solid #ccc; box-sizing: border-box; }
+        button { background-color: #007bff; color: white; border: none; cursor: pointer; }
+        button:hover { background-color: #0056b3; }
+        .success { color: green; font-weight: bold; }
+        #app-content, #login-form { display: none; }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <div id="login-form">
+            <h2>Вход</h2>
+            <form id="login-submit-form">
+                <input type="email" id="email" placeholder="Email" required value="user@example.com">
+                <input type="password" id="password" placeholder="Пароль" required value="password123">
+                <button type="submit">Войти</button>
+            </form>
+            <p style="text-align: center; font-size: small;">Используйте любые данные, они не проверяются.</p>
+        </div>
+
+        <div id="app-content">
+            <h2>🔐 Приложение</h2>
+            <p class="success">Вы успешно авторизованы!</p>
+            <p>Ваш "JWT Токен" (сохранен в **localStorage**):</p>
+            <textarea id="token-display" rows="5" readonly style="width: 100%; margin-bottom: 15px; border: 1px dashed #007bff;"></textarea>
+            <button id="logout-button">Выход</button>
+        </div>
+    </div>
+
+    <script>
+        // --- Логика JavaScript ---
+
+        const TOKEN_KEY = 'authToken';
+
+        const loginFormEl = document.getElementById('login-form');
+        const appContentEl = document.getElementById('app-content');
+        const loginSubmitFormEl = document.getElementById('login-submit-form');
+        const logoutButtonEl = document.getElementById('logout-button');
+        const tokenDisplayEl = document.getElementById('token-display');
+
+        /**
+         * 1. Генерирует "фейковый" JWT токен.
+         * В реальном приложении этот токен генерирует бэкенд после успешной аутентификации.
+         * Используем Base64 для имитации формата JWT.
+         */
+        function generateFakeJwt(email) {
+            const header = btoa(JSON.stringify({ alg: 'HS256', typ: 'JWT' }));
+            const payload = btoa(JSON.stringify({ 
+                userId: 1, 
+                email: email, 
+                iat: Math.floor(Date.now() / 1000), 
+                exp: Math.floor(Date.now() / 1000) + (60 * 60) // Истекает через 1 час
+            }));
+            const signature = btoa('fake_signature');
+            return `${header}.${payload}.${signature}`;
+        }
+
+        /**
+         * 2. Сохраняет токен в localStorage.
+         */
+        function login(token) {
+            localStorage.setItem(TOKEN_KEY, token);
+            renderApp();
+        }
+
+        /**
+         * 4. Удаляет токен из localStorage.
+         */
+        function logout() {
+            localStorage.removeItem(TOKEN_KEY);
+            renderApp();
+        }
+
+        /**
+         * 3. Проверяет наличие токена и управляет отображением.
+         * Вызывается при загрузке страницы и после событий входа/выхода.
+         */
+        function renderApp() {
+            const token = localStorage.getItem(TOKEN_KEY);
+
+            if (token) {
+                // Пользователь авторизован
+                loginFormEl.style.display = 'none';
+                appContentEl.style.display = 'block';
+                tokenDisplayEl.value = token; // Отображаем токен
+
+            } else {
+                // Пользователь не авторизован
+                appContentEl.style.display = 'none';
+                loginFormEl.style.display = 'block';
+            }
+        }
+
+        // --- Обработчики событий ---
+
+        // Обработка отправки формы входа
+        loginSubmitFormEl.addEventListener('submit', function(event) {
+            event.preventDefault();
+            const email = document.getElementById('email').value;
+            // Имитация успешного входа
+            const fakeToken = generateFakeJwt(email);
+            login(fakeToken);
+        });
+
+        // Обработка кнопки выхода
+        logoutButtonEl.addEventListener('click', function() {
+            logout();
+        });
+
+        // --- Инициализация ---
+
+        // 3. Проверка при перезагрузке страницы и первичное отображение
+        document.addEventListener('DOMContentLoaded', renderApp);
+
+    </script>
+</body>
+</html>
