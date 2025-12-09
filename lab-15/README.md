@@ -1,3 +1,4 @@
+<img width="1151" height="481" alt="image" src="https://github.com/user-attachments/assets/4a843311-7b85-4601-957f-90e51059919d" />
 
 # Мини-каталог — Полноценный сайт (с авторизацией)
 
