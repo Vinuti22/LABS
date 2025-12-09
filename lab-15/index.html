@@ -1,0 +1,77 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Мини-каталог — Полноценный сайт</title>
+  <link rel="stylesheet" href="./style.css">
+</head>
+<body>
+  <header class="site-header">
+    <div class="wrap">
+      <h1 class="logo">Мини-каталог</h1>
+      <nav id="nav">
+        <button id="btn-login" class="btn ghost">Войти</button>
+        <button id="btn-register" class="btn ghost">Регистрация</button>
+        <button id="btn-logout" class="btn" style="display:none">Выйти</button>
+      </nav>
+    </div>
+  </header>
+
+  <main class="wrap main-grid">
+    <aside class="panel auth-panel" id="auth-panel">
+      <h2 id="auth-title">Вход</h2>
+      <form id="auth-form">
+        <input id="auth-username" placeholder="Логин (email)" required type="email" />
+        <input id="auth-password" placeholder="Пароль" required type="password" />
+        <div class="auth-actions">
+          <button id="auth-submit" class="btn">Войти</button>
+          <button id="auth-switch" type="button" class="btn ghost">Перейти к регистрации</button>
+        </div>
+        <div id="auth-msg" class="muted"></div>
+      </form>
+    </aside>
+
+    <section class="panel catalog-panel" id="catalog-panel" aria-live="polite">
+      <div class="catalog-header">
+        <h2>Каталог товаров</h2>
+        <div class="controls">
+          <input id="search" placeholder="Поиск..." />
+          <select id="category-filter"><option value="">Все категории</option></select>
+          <button id="add-new" class="btn">Добавить товар</button>
+        </div>
+      </div>
+
+      <ul id="product-list" class="product-list"></ul>
+    </section>
+
+    <aside class="panel details-panel" id="details-panel" style="display:none">
+      <h3 id="user-greet">Привет!</h3>
+      <div id="product-form-wrap">
+        <h4>Добавить / изменить товар</h4>
+        <form id="product-form">
+          <input id="product-id" type="hidden" />
+          <input id="name" placeholder="Название" required />
+          <input id="category" placeholder="Категория" required />
+          <input id="price" placeholder="Цена" type="number" min="0" required />
+          <div class="buttons">
+            <button type="submit" class="btn">Сохранить</button>
+            <button type="button" id="clear-btn" class="btn ghost">Отмена</button>
+          </div>
+        </form>
+      </div>
+      <hr/>
+      <div>
+        <h4>Пользователь</h4>
+        <p id="user-email" class="muted"></p>
+      </div>
+    </aside>
+  </main>
+
+  <footer class="site-footer">
+    <div class="wrap">© 2025 Мини-каталог — демо. Данные хранятся в localStorage. Для реальной системы используйте серверную авторизацию.</div>
+  </footer>
+
+  <script type="module" src="./js/main.js"></script>
+</body>
+</html>
